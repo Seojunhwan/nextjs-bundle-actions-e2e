@@ -25,7 +25,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec next build --webpack
 
-      - uses: Seojunhwan/nextjs-bundle-actions/actions/collect@7f39f962a36f5db2d4203b36a29f1e4ae1ea6662
+      - uses: Seojunhwan/nextjs-bundle-actions/actions/collect@8197e1755acc0dfbf9360298fff937d699b927d7
         with:
           build-path: .next
           project-id: web

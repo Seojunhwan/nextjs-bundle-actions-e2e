@@ -15,7 +15,7 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: Seojunhwan/nextjs-bundle-actions/actions/report@7f39f962a36f5db2d4203b36a29f1e4ae1ea6662
+      - uses: Seojunhwan/nextjs-bundle-actions/actions/report@8197e1755acc0dfbf9360298fff937d699b927d7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           project-id: web
