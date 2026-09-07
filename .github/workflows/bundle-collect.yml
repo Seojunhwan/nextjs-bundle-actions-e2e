@@ -23,10 +23,22 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec next build --webpack
+      - name: Build web with Webpack through Turborepo
+        run: pnpm turbo run build:webpack --filter=web
 
-      - uses: Seojunhwan/nextjs-bundle-actions/actions/collect@8197e1755acc0dfbf9360298fff937d699b927d7
+      - name: Collect Webpack snapshot
+        uses: Seojunhwan/nextjs-bundle-actions/actions/collect@8197e1755acc0dfbf9360298fff937d699b927d7
         with:
-          build-path: .next
-          project-id: web
+          build-path: apps/web/.next
+          project-id: web-webpack
+          strict: true
+
+      - name: Build web with Turbopack through Turborepo
+        run: pnpm turbo run build --filter=web
+
+      - name: Collect Turbopack snapshot
+        uses: Seojunhwan/nextjs-bundle-actions/actions/collect@8197e1755acc0dfbf9360298fff937d699b927d7
+        with:
+          build-path: apps/web/.next
+          project-id: web-turbopack
           strict: true

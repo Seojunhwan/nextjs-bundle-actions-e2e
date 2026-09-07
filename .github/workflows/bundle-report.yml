@@ -15,8 +15,16 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: Seojunhwan/nextjs-bundle-actions/actions/report@8197e1755acc0dfbf9360298fff937d699b927d7
+      - name: Report Webpack comparison
+        uses: Seojunhwan/nextjs-bundle-actions/actions/report@8197e1755acc0dfbf9360298fff937d699b927d7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          project-id: web
+          project-id: web-webpack
+          config-path: .github/nextjs-bundle-actions.yml
+
+      - name: Report Turbopack comparison
+        uses: Seojunhwan/nextjs-bundle-actions/actions/report@8197e1755acc0dfbf9360298fff937d699b927d7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          project-id: web-turbopack
           config-path: .github/nextjs-bundle-actions.yml

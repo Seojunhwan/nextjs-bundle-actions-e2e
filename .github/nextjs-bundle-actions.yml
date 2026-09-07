@@ -1,6 +1,10 @@
 version: 1
 projects:
-  web:
+  web-webpack:
+    topN: 20
+    budgets:
+      maxGzipDeltaBytes: 100000
+  web-turbopack:
     topN: 20
     budgets:
       maxGzipDeltaBytes: 100000
