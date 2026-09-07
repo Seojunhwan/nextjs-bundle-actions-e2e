@@ -11,6 +11,9 @@ permissions:
 jobs:
   collect:
     runs-on: ubuntu-latest
+    outputs:
+      webpack_artifact_name: ${{ steps.collect_webpack.outputs.artifact-name }}
+      turbopack_artifact_name: ${{ steps.collect_turbopack.outputs.artifact-name }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -26,19 +29,76 @@ jobs:
       - name: Build web with Webpack through Turborepo
         run: pnpm turbo run build:webpack --filter=web
 
-      - name: Collect Webpack snapshot
-        uses: Seojunhwan/nextjs-bundle-actions/actions/collect@8197e1755acc0dfbf9360298fff937d699b927d7
+      - id: collect_webpack
+        name: Collect Webpack snapshot
+        uses: Seojunhwan/nextjs-bundle-actions/actions/collect@8cd3bb7eb5a519c040b7f6ec19c7e826e67c0aab
         with:
           build-path: apps/web/.next
           project-id: web-webpack
           strict: true
 
+      - name: Webpack snapshot 출력 검증
+        env:
+          ARTIFACT_DIGEST: ${{ steps.collect_webpack.outputs.artifact-digest }}
+          ARTIFACT_ID: ${{ steps.collect_webpack.outputs.artifact-id }}
+          ARTIFACT_NAME: ${{ steps.collect_webpack.outputs.artifact-name }}
+          ARTIFACT_URL: ${{ steps.collect_webpack.outputs.artifact-url }}
+          SNAPSHOT_PATH: ${{ steps.collect_webpack.outputs.snapshot-path }}
+        run: |
+          test -f "$SNAPSHOT_PATH"
+          test "$(jq -r '.environment.bundler' "$SNAPSHOT_PATH")" = webpack
+          test "$(jq -r '.identity.projectId' "$SNAPSHOT_PATH")" = web-webpack
+          test -n "$ARTIFACT_DIGEST"
+          test -n "$ARTIFACT_ID"
+          test -n "$ARTIFACT_NAME"
+          test -n "$ARTIFACT_URL"
+
       - name: Build web with Turbopack through Turborepo
         run: pnpm turbo run build --filter=web
 
-      - name: Collect Turbopack snapshot
-        uses: Seojunhwan/nextjs-bundle-actions/actions/collect@8197e1755acc0dfbf9360298fff937d699b927d7
+      - id: collect_turbopack
+        name: Collect Turbopack snapshot
+        uses: Seojunhwan/nextjs-bundle-actions/actions/collect@8cd3bb7eb5a519c040b7f6ec19c7e826e67c0aab
         with:
           build-path: apps/web/.next
           project-id: web-turbopack
           strict: true
+
+      - name: Turbopack snapshot 출력 검증
+        env:
+          ARTIFACT_DIGEST: ${{ steps.collect_turbopack.outputs.artifact-digest }}
+          ARTIFACT_ID: ${{ steps.collect_turbopack.outputs.artifact-id }}
+          ARTIFACT_NAME: ${{ steps.collect_turbopack.outputs.artifact-name }}
+          ARTIFACT_URL: ${{ steps.collect_turbopack.outputs.artifact-url }}
+          SNAPSHOT_PATH: ${{ steps.collect_turbopack.outputs.snapshot-path }}
+        run: |
+          test -f "$SNAPSHOT_PATH"
+          test "$(jq -r '.environment.bundler' "$SNAPSHOT_PATH")" = turbopack
+          test "$(jq -r '.identity.projectId' "$SNAPSHOT_PATH")" = web-turbopack
+          test -n "$ARTIFACT_DIGEST"
+          test -n "$ARTIFACT_ID"
+          test -n "$ARTIFACT_NAME"
+          test -n "$ARTIFACT_URL"
+
+  consume:
+    needs: collect
+    runs-on: ubuntu-latest
+    steps:
+      - name: Webpack snapshot 다운로드
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ needs.collect.outputs.webpack_artifact_name }}
+          path: snapshots/webpack
+
+      - name: Turbopack snapshot 다운로드
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ needs.collect.outputs.turbopack_artifact_name }}
+          path: snapshots/turbopack
+
+      - name: 다음 job의 snapshot 검증
+        run: |
+          test "$(jq -r '.environment.bundler' snapshots/webpack/snapshot.json)" = webpack
+          test "$(jq -r '.identity.projectId' snapshots/webpack/snapshot.json)" = web-webpack
+          test "$(jq -r '.environment.bundler' snapshots/turbopack/snapshot.json)" = turbopack
+          test "$(jq -r '.identity.projectId' snapshots/turbopack/snapshot.json)" = web-turbopack
