@@ -6,7 +6,8 @@
   "scripts": {
     "build": "turbo run build",
     "build:webpack": "turbo run build:webpack",
-    "lint": "turbo run lint"
+    "lint": "turbo run lint",
+    "test:snapshot": "node scripts/assert-snapshot.mjs"
   },
   "devDependencies": {
     "turbo": "2.10.12"

@@ -48,6 +48,7 @@ jobs:
           test -f "$SNAPSHOT_PATH"
           test "$(jq -r '.environment.bundler' "$SNAPSHOT_PATH")" = webpack
           test "$(jq -r '.identity.projectId' "$SNAPSHOT_PATH")" = web-webpack
+          pnpm test:snapshot "$SNAPSHOT_PATH" webpack web-webpack apps/web/.next
           test -n "$ARTIFACT_DIGEST"
           test -n "$ARTIFACT_ID"
           test -n "$ARTIFACT_NAME"
@@ -75,6 +76,7 @@ jobs:
           test -f "$SNAPSHOT_PATH"
           test "$(jq -r '.environment.bundler' "$SNAPSHOT_PATH")" = turbopack
           test "$(jq -r '.identity.projectId' "$SNAPSHOT_PATH")" = web-turbopack
+          pnpm test:snapshot "$SNAPSHOT_PATH" turbopack web-turbopack apps/web/.next
           test -n "$ARTIFACT_DIGEST"
           test -n "$ARTIFACT_ID"
           test -n "$ARTIFACT_NAME"
@@ -100,5 +102,7 @@ jobs:
         run: |
           test "$(jq -r '.environment.bundler' snapshots/webpack/snapshot.json)" = webpack
           test "$(jq -r '.identity.projectId' snapshots/webpack/snapshot.json)" = web-webpack
+          test "$(jq -c '[.routes[].path] | sort' snapshots/webpack/snapshot.json)" = '["/","/dashboard","/lazy","/products/[slug]"]'
           test "$(jq -r '.environment.bundler' snapshots/turbopack/snapshot.json)" = turbopack
           test "$(jq -r '.identity.projectId' snapshots/turbopack/snapshot.json)" = web-turbopack
+          test "$(jq -c '[.routes[].path] | sort' snapshots/turbopack/snapshot.json)" = '["/","/dashboard","/lazy","/products/[slug]"]'
