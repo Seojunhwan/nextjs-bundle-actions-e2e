@@ -31,7 +31,7 @@ jobs:
 
       - id: collect_webpack
         name: Collect Webpack snapshot
-        uses: Seojunhwan/nextjs-bundle-actions/actions/collect@8cd3bb7eb5a519c040b7f6ec19c7e826e67c0aab
+        uses: Seojunhwan/nextjs-bundle-actions/actions/collect@b58f448d9607c8f4946cb651ed6046c94048ed10
         with:
           build-path: apps/web/.next
           project-id: web-webpack
@@ -48,6 +48,7 @@ jobs:
           test -f "$SNAPSHOT_PATH"
           test "$(jq -r '.environment.bundler' "$SNAPSHOT_PATH")" = webpack
           test "$(jq -r '.identity.projectId' "$SNAPSHOT_PATH")" = web-webpack
+          pnpm test:snapshot "$SNAPSHOT_PATH" webpack web-webpack apps/web/.next
           test -n "$ARTIFACT_DIGEST"
           test -n "$ARTIFACT_ID"
           test -n "$ARTIFACT_NAME"
@@ -58,7 +59,7 @@ jobs:
 
       - id: collect_turbopack
         name: Collect Turbopack snapshot
-        uses: Seojunhwan/nextjs-bundle-actions/actions/collect@8cd3bb7eb5a519c040b7f6ec19c7e826e67c0aab
+        uses: Seojunhwan/nextjs-bundle-actions/actions/collect@b58f448d9607c8f4946cb651ed6046c94048ed10
         with:
           build-path: apps/web/.next
           project-id: web-turbopack
@@ -75,6 +76,7 @@ jobs:
           test -f "$SNAPSHOT_PATH"
           test "$(jq -r '.environment.bundler' "$SNAPSHOT_PATH")" = turbopack
           test "$(jq -r '.identity.projectId' "$SNAPSHOT_PATH")" = web-turbopack
+          pnpm test:snapshot "$SNAPSHOT_PATH" turbopack web-turbopack apps/web/.next
           test -n "$ARTIFACT_DIGEST"
           test -n "$ARTIFACT_ID"
           test -n "$ARTIFACT_NAME"
@@ -100,5 +102,7 @@ jobs:
         run: |
           test "$(jq -r '.environment.bundler' snapshots/webpack/snapshot.json)" = webpack
           test "$(jq -r '.identity.projectId' snapshots/webpack/snapshot.json)" = web-webpack
+          test "$(jq -c '[.routes[].path] | sort' snapshots/webpack/snapshot.json)" = '["/","/dashboard","/lazy","/products/[slug]"]'
           test "$(jq -r '.environment.bundler' snapshots/turbopack/snapshot.json)" = turbopack
           test "$(jq -r '.identity.projectId' snapshots/turbopack/snapshot.json)" = web-turbopack
+          test "$(jq -c '[.routes[].path] | sort' snapshots/turbopack/snapshot.json)" = '["/","/dashboard","/lazy","/products/[slug]"]'
