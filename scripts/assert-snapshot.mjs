@@ -48,6 +48,12 @@ if (snapshot.identity.projectId !== expectedProjectId) {
     `Expected project ${expectedProjectId}; received ${snapshot.identity.projectId}`,
   );
 }
+if (snapshot.schemaVersion !== 2) {
+  fail(`Expected snapshot schema v2; received v${snapshot.schemaVersion}`);
+}
+if (!snapshot.capabilities.includes("route.deferredAssets.v1")) {
+  fail("Snapshot does not advertise route.deferredAssets.v1");
+}
 
 for (const route of snapshot.routes) {
   if (route.initialAssets.length === 0) {
@@ -58,6 +64,9 @@ for (const route of snapshot.routes) {
   }
   if (route.sharedRawBytes <= 0) {
     fail(`${route.path} has no shared initial JavaScript`);
+  }
+  if (!Array.isArray(route.deferredAssets)) {
+    fail(`${route.path} has no deferred asset measurement`);
   }
 }
 
@@ -89,10 +98,34 @@ if (buildPath) {
   if (eagerSentinelChunk) {
     fail(`Dynamic component chunk is initial JavaScript: ${eagerSentinelChunk}`);
   }
+
+  const lazyRoute = snapshot.routes.find((route) => route.path === "/lazy");
+  if (!lazyRoute) {
+    fail("The /lazy route is missing");
+  }
+  const measuredSentinelChunk = sentinelChunks.find((chunk) =>
+    lazyRoute.deferredAssets.includes(chunk),
+  );
+  if (!measuredSentinelChunk) {
+    fail("The /lazy route did not measure the dynamic component as deferred");
+  }
+  if (lazyRoute.deferredRawBytes <= 0 || lazyRoute.deferredGzipBytes <= 0) {
+    fail("The /lazy route has no deferred JavaScript size");
+  }
+  const incorrectlyAssociatedRoute = snapshot.routes.find(
+    (route) =>
+      route.path !== "/lazy" &&
+      sentinelChunks.some((chunk) => route.deferredAssets.includes(chunk)),
+  );
+  if (incorrectlyAssociatedRoute) {
+    fail(
+      `Dynamic component was associated with ${incorrectlyAssociatedRoute.path}`,
+    );
+  }
 }
 
 console.log(
   `Verified ${expectedBundler} snapshot with ${actualRoutes.length} routes${
-    buildPath ? " and a non-initial dynamic chunk" : ""
+    buildPath ? " and a route-linked deferred dynamic chunk" : ""
   }`,
 );

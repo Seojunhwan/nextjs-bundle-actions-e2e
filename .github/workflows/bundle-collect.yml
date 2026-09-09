@@ -31,7 +31,7 @@ jobs:
 
       - id: collect_webpack
         name: Collect Webpack snapshot
-        uses: Seojunhwan/nextjs-bundle-actions/actions/collect@8cd3bb7eb5a519c040b7f6ec19c7e826e67c0aab
+        uses: Seojunhwan/nextjs-bundle-actions/actions/collect@b58f448d9607c8f4946cb651ed6046c94048ed10
         with:
           build-path: apps/web/.next
           project-id: web-webpack
@@ -59,7 +59,7 @@ jobs:
 
       - id: collect_turbopack
         name: Collect Turbopack snapshot
-        uses: Seojunhwan/nextjs-bundle-actions/actions/collect@8cd3bb7eb5a519c040b7f6ec19c7e826e67c0aab
+        uses: Seojunhwan/nextjs-bundle-actions/actions/collect@b58f448d9607c8f4946cb651ed6046c94048ed10
         with:
           build-path: apps/web/.next
           project-id: web-turbopack
